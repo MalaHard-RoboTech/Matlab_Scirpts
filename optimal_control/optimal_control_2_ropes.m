@@ -293,3 +293,67 @@ fclose(fid);
 
 % Scrittura dati
 writematrix(output_data, file_csv, 'WriteMode', 'append');
+
+
+
+figure;
+hold on;
+plot(solution.time_fine, abs(solution.l1d_fine .* solution.Fr_l_fine), 'b', 'DisplayName', 'Corda sx');
+plot(solution.time_fine, abs(solution.l2d_fine .* solution.Fr_r_fine), 'r', 'DisplayName', 'Corda dx');
+hold off;
+
+xlabel('Tempo [s]');
+ylabel('Potenza [W]');
+title('Potenza istantanea corde');
+legend;
+grid on;
+
+fprintf('---------------------------------------\n')
+fprintf('Leg impulse force: %f %f %f\n', solution.Fleg);
+fprintf('Jump Duration: %f\n', solution.Tf);
+fprintf('Landing Target: %f %f %f\n', solution.achieved_target);
+fprintf('---------------------------------------\n')
+
+fprintf('---------------------------------------\n')
+[impulse_work , hoist_work, hoist_work_fine] = computeJumpEnergyConsumption(solution,params);
+Energy_consumed = impulse_work+hoist_work_fine;
+fprintf('Energy_consumed [J]: %f \n\n', Energy_consumed);
+fprintf('---------------------------------------\n')
+
+fprintf('---------------------------------------\n')
+fprintf('-----------------other value----------------------\n')
+%
+P_media = solution.Ekinf / (solution.time_fine(end) - solution.time_fine(1));
+fprintf('Potenza media stimata: %f W\n\n', P_media);
+
+%plot max power corde
+fprintf('Max power istant (corda dx): %f W\n', max_power_r);
+fprintf('Max power istant (corda sx): %f W\n', max_power_l);
+
+v_max_l = max(abs(solution.l1d_fine)); % Velocità massima della corda sinistra
+v_max_r = max(abs(solution.l2d_fine)); % Velocità massima della corda destra
+
+fprintf('Velocità massima della corda sx: %f m/s\n', v_max_l);
+fprintf('Velocità massima della corda dx: %f m/s\n', v_max_r);
+
+a_l = diff(solution.l1d_fine) ./ diff(solution.time_fine);
+a_r = diff(solution.l2d_fine) ./ diff(solution.time_fine);
+
+a_max_l = max(abs(a_l)); % Accelerazione massima corda sinistra
+a_max_r = max(abs(a_r)); % Accelerazione massima corda destra
+
+fprintf('Accelerazione massima della corda sx: %f m/s^2\n', a_max_l);
+fprintf('Accelerazione massima della corda dx: %f m/s^2\n', a_max_r);
+
+
+figure;
+hold on;
+plot(solution.time_fine(1:end-1), abs(a_l), 'r', 'DisplayName', 'Acc. corda sx');
+plot(solution.time_fine(1:end-1), abs(a_r), 'b', 'DisplayName', 'Acc. corda dx');
+hold off;
+
+xlabel('Tempo [s]');
+ylabel('Accelerazione [m/s^2]');
+title('Accelerazione delle corde');
+legend;
+grid on;
